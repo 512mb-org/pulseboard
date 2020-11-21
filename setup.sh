@@ -35,8 +35,9 @@ if [ "$(echo $pkglist | grep autokey)" == "" ]; then
 fi
 echo -ne "Finished checking the required python modules\n"
 unset pkglist
-if [ $(pacmd list-sinks | grep "pulseboard-sink") ]; then
+if pacmd list-sinks | grep -q "pulseboard-sink"; then
   echo "PulseBoard seems to be loaded - sink exists. Skipping."
+  echo "(\"pulseaudio -k; pulseaudio --start\" to reset the config)"
   exit 0
 fi
 echo "Enabling pulse modules"
@@ -58,7 +59,6 @@ fi
 echo "Using $mic_name"
 #create the sink to connect vlc to
 pacmd load-module module-null-sink sink_name="pulseboard-sink"
-echo $?
 #relay the audio from the mic into the null sink
 pacmd load-module module-loopback source="$mic_name" sink="pulseboard-sink"
 #make our monitor a source
