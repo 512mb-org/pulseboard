@@ -29,9 +29,9 @@ if [ "$(echo $pkglist | grep python-vlc)" == "" ]; then
   echo "python-vlc is not installed - installing"
   pip3 install --user python-vlc
 fi
-if [ "$(echo $pkglist | grep autokey)" == "" ]; then
-  echo "autokey is not installed - installing"
-  pip3 install --user autokey
+if [ "$(echo $pkglist | grep pynput)" == "" ]; then
+  echo "pynput is not installed - installing"
+  pip3 install --user pynput
 fi
 echo -ne "Finished checking the required python modules\n"
 unset pkglist

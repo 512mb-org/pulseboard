@@ -2,7 +2,6 @@ from pynput import keyboard
 import vlc
 import re
 import random
-import asyncio
 print("Instantiating the player")
 instance = vlc.Instance()
 micspam_player = instance.media_player_new()
@@ -39,21 +38,21 @@ class InputHandler:
     def __init__(self):
         self.keymap = {}
         self.inputbuffer = []
+        self.mode = ""
     def on_press(self,key):
         self.inputbuffer.append(key)
-        if exists(self.keymap,mode+"#"+str(self.inputbuffer)):
-            exec(self.keymap[mode+"#"+str(self.inputbuffer)])
+        if exists(self.keymap,self.mode+"#"+str(self.inputbuffer)):
+            exec(self.keymap[self.mode+"#"+str(self.inputbuffer)])
     def on_release(self,key):
         try:
             self.inputbuffer.remove(key)
         except:
             self.inputbuffer.clear()
     def bind(self,keymap,comm):
-        keybind = re.match("(.*?)#?(.+)",keymap)
-        print(keybind.group(1),keybind.group(2))
-        kmode = keybind.group(1) or ""
+        keybind = re.match("(.*#)?(.+)",keymap)
+        kmode = keybind.group(1) or "#"
         name = keyboard.HotKey.parse(keybind.group(2))
-        self.keymap[kmode+"#"+str(name)] = comm
+        self.keymap[kmode[0:-1]+"#"+str(name)] = comm
     def unbind(self,keymap):
         name = keyboard.HotKey.parse(keymap)
         if exists(self.keymap,mode+"#"+str(name)):
@@ -61,7 +60,8 @@ class InputHandler:
     def list(self):
         for k,v in self.keymap.items():
            print(k+": "+v)
-
+    def set_mode(self,mode):
+        self.mode = mode
 kmap = InputHandler()
 def exec(comm):
     global device
@@ -73,18 +73,33 @@ def exec(comm):
     if comm.startswith("stop"):
         micspam_player.stop()
     if comm.startswith("mode"):
-        mode = re.match("mode(.*)",comm).group(1)
+        mode = re.match("mode([^\n]+)",comm).group(1)
         mode = mode.lstrip()
+        kmap.set_mode(mode)
     if comm.startswith("list"):
         kmap.list()
     if comm.startswith("device-list"):
         dev_id = 0
         for I in devices:
-            print(dev_id+") "+I.decode("utf-8"))
+            print(str(dev_id)+") "+I.decode("utf-8"))
             dev_id+=1
     if comm.startswith("device-set "):
         dev_id = re.match("device-set (\d+)",comm).group(1)
         device = devices[int(dev_id)]
+    if comm.startswith("volume"):
+        volume = re.match("volume ([\+\-]?)(\d+)",comm)
+        current = micspam_player.audio_get_volume()
+        if volume == None:
+          print("Volume: "+str(current))
+        else:
+          if volume.group(1) == '':
+            micspam_player.audio_set_volume(int(volume.group(2)))
+          elif volume.group(1) == '+':
+            micspam_player.audio_set_volume(current+int(volume.group(2)))
+          elif volume.group(1) == "-":
+            micspam_player.audio_set_volume(current-int(volume.group(2))) 
+          print("Volume: "+str(micspam_player.audio_get_volume()))
+
     if comm.startswith("help"):
         print("""
 Commands:
@@ -96,6 +111,7 @@ list - list all bindings
 device-list - list all devices
 device-set - set the output device
 exit - exit the program
+volume [<-+>]<percent> - set volume (example: volume +5, volume 50)
 
 bindings should be set via ./.pulsebrc file in this form:
 [mode#<shift>+k]="command"
