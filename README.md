@@ -49,6 +49,6 @@ This will create 2 modes - the mode named "discord" (which is activated by press
 
 Both modes have different keybindgins set for them. Note that the commands are typed exactly as they would be typed in the console mode.
 
-#License
+# License
 
 This work is licensed under the MIT license.
