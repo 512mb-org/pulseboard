@@ -1,5 +1,5 @@
 # pulseboard
-The arguably functional, proof-of-concept micspam soundboard tool using Pulseaudio
+The arguably functional, proof-of-concept micspam soundboard tool using Pulseaudio and libvlc
 
 # Installation
 The installtion of this mess consists of 2 parts - setting up the pulseaudio modules to work with the pulseboard.py file using setup.sh and then running the system itself using pulseboard.py
